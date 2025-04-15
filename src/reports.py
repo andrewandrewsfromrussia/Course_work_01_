@@ -1,21 +1,22 @@
 import json
 from datetime import datetime
 from functools import wraps
-from typing import Optional
+from typing import Any, Callable, Optional
 
 import pandas as pd
+from pandas import DataFrame
 
 from src.logger_config import setup_logger
 
 
-def save_report(filename=None):
+def save_report(filename: Optional[str] = None) -> Callable:
     """
     Декоратор для функций отчетов, записывает результат в файл. Можно записывать с параметром названия файла или без.
     """
 
-    def actual_save(func):
+    def actual_save(func: Callable[..., DataFrame]) -> Callable[..., DataFrame]:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> pd.DataFrame:
             result = func(*args, **kwargs)
 
             actual_filename = filename
@@ -24,9 +25,7 @@ def save_report(filename=None):
 
             try:
                 if isinstance(result, pd.DataFrame):
-                    result.to_json(
-                        actual_filename, orient="records", force_ascii=False, indent=4
-                    )
+                    result.to_json(actual_filename, orient="records", force_ascii=False, indent=4)
                 else:
                     with open(actual_filename, "w", encoding="utf-8") as f:
                         json.dump(result, f, ensure_ascii=False, indent=4)
@@ -47,9 +46,7 @@ def save_report(filename=None):
 
 
 @save_report()
-def spending_by_category(
-    transactions: pd.DataFrame, category: str, date: Optional[str] = None
-) -> pd.DataFrame:
+def spending_by_category(transactions: pd.DataFrame, category: str, date: Optional[str] = None) -> pd.DataFrame:
     """
     Возвращает траты по категории за последние 3 месяца от переданной даты.
     Если дата не передана - используется текущая дата.
@@ -69,10 +66,7 @@ def spending_by_category(
     logger.info("Фильтрация данных.")
     filtered = transactions[
         (transactions["Категория"] == category)
-        & (
-            pd.to_datetime(transactions["Дата операции"], dayfirst=True)
-            >= three_months_ago
-        )
+        & (pd.to_datetime(transactions["Дата операции"], dayfirst=True) >= three_months_ago)
         & (pd.to_datetime(transactions["Дата операции"], dayfirst=True) <= current_date)
     ]
 

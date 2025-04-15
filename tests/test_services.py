@@ -1,6 +1,9 @@
-import pytest
-from src.services import cashback_analyze
 import json
+
+import pytest
+
+from src.services import cashback_analyze
+
 
 @pytest.mark.parametrize(
     "data, year, month, expected",
@@ -36,7 +39,7 @@ import json
         ),
     ],
 )
-def test_calculate_cashback(data, year, month, expected):
+def test_calculate_cashback(data: list, year: int, month: int, expected: dict[str, float]) -> None:
     result = cashback_analyze(data, year, month)
 
     result_dict = json.loads(result)

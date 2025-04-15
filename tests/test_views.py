@@ -1,26 +1,25 @@
 import json
-from unittest.mock import patch
 
-from src.views import unated_json
+import pytest
 
-@patch("src.views.unated")
-def test_unated_json_success(mock_unated):
-    mock_unated.return_value = {
-        "greeting": "Доброе утро",
-        "cards": [{"cashback": 5.0, "last_digits": "1234", "total_spend": 1500}],
-        "top_transactions": [{"amount": 1000}],
-        "currency_rates": {"EUR": 96.5, "USD": 89.7},
-        "stock_prices": {"SPY": 400.1, "GOOGL": 2900.2}
-    }
+from src.views import function_to_json  # замените на свой путь
 
-    data = [{"dummy": "data"}]
-    date = "2025-04-10 07:00:00"
 
-    result = unated_json(data, date)
-    parsed = json.loads(result)
+def sample_func(a: int, b: int) -> dict:
+    return {"sum": a + b}
 
-    assert isinstance(parsed, dict)
-    assert parsed["greeting"] == "Доброе утро"
-    assert parsed["cards"][0]["last_digits"] == "1234"
-    assert parsed["top_transactions"][0]["amount"] == 1000
-    assert parsed["currency_rates"]["USD"] == 89.7
+
+def non_serializable_func() -> set:
+    return set([1, 2, 3])  # Множество не сериализуется в JSON по умолчанию
+
+
+def test_function_to_json_success() -> None:
+    result = function_to_json(sample_func, 2, 3)
+    expected = json.dumps({"sum": 5}, ensure_ascii=False, indent=4)
+    assert result == expected
+
+
+def test_function_to_json_raises_on_non_serializable() -> None:
+    with pytest.raises(ValueError) as exc_info:
+        function_to_json(non_serializable_func)
+    assert "Ошибка сериализации" in str(exc_info.value)

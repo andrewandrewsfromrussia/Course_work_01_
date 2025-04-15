@@ -1,6 +1,7 @@
 import json
-from datetime import datetime
 from collections import defaultdict
+from datetime import datetime
+from typing import DefaultDict
 
 
 def cashback_analyze(data: list, year: int, month: int) -> str:
@@ -9,7 +10,7 @@ def cashback_analyze(data: list, year: int, month: int) -> str:
     :return: JSON строка.
     """
 
-    cashback_dict = defaultdict(float)
+    cashback_dict: DefaultDict[str, float] = defaultdict(float)
 
     for transaction in data:
         transaction_date = transaction.get("Дата операции", "")

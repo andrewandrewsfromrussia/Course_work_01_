@@ -1,9 +1,14 @@
 import json
-from utils import unated
+from typing import Any, Callable
 
-def unated_json(data: list, date: str) -> str:
+
+def function_to_json(func: Callable[..., Any], *args: Any, **kwargs: Any) -> str:
     """
-    Преобразует ответ unated в JSON формат
+    Вызывает переданную функцию с аргументами и возвращает результат в JSON-формате.
     """
-    result = unated(data, date)
-    return json.dumps(result, ensure_ascii=False, indent=4)
+    result = func(*args, **kwargs)
+    try:
+        json_result = json.dumps(result, ensure_ascii=False, indent=4)
+    except (TypeError, ValueError) as e:
+        raise ValueError(f"Ошибка сериализации: {e}")
+    return json_result
